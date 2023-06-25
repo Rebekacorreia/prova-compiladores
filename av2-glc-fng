@@ -1,0 +1,51 @@
+def transform_to_greibach(glc):
+    greibach = {}
+
+#Adicionar símbolo inicial
+ start_symbol = list(glc.keys())[0]
+ new_start_symbol = start_symbol + "'"
+ greibach[new_start_symbol] = [[start_symbol]]
+
+#Converter produções para FNG
+  for non_terminal in glc:
+      greibach[non_terminal] = []
+      for production in glc[non_terminal]:
+          if len(production) > 0 and production[0] == non_terminal:
+               # Remover recursão à esquerda direta
+              alpha = production[1:]
+             greibach[non_terminal].extend([[symbol + new_start_symbol for symbol in greibach[start_symbol][0]] + alpha])
+            else:
+            greibach[non_terminal].append(production)
+
+#Eliminar produções 
+epsilon_productions = []
+  for non_terminal in greibach:
+    for i, production in enumerate(greibach[non_terminal]):
+          if len(production) == 0:
+          epsilon_productions.append(non_terminal)
+          greibach[non_terminal].pop(i)
+          break
+
+  for non_terminal in greibach:
+productions = greibach[non_terminal]
+    for i in range(len(productions)):
+        for symbol in epsilon_productions:
+           if symbol in productions[i]:
+             new_production = productions[i].copy()
+             new_production.remove(symbol)
+                 if len(new_production) == 0:
+                 new_production = [""]
+                    greibach[non_terminal].append(new_production)
+
+    return greibach
+glc = {
+    "S": [["A", "B"], ["S", "C", "B"]],
+    "A": [["a", "A"], ["C"]],
+    "B": [["b", "B"], ["b"]],
+    "C": [["c", "C"], []]
+}
+
+greibach = transform_to_greibach(glc)
+for non_terminal in greibach:
+    for production in greibach[non_terminal]:
+        print(non_terminal, "->", " ".join(production))
